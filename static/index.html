@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Web site created using create-snowpack-app"
+    />
+    <title>Snowpack App</title>
+    <link rel="stylesheet" type="text/css" href="/index.css" />
+    <script type="importmap-shim">
+      {
+        "imports": {
+          "test": "/src/test.js"
+        },
+        "scopes": {
+
+        }
+      }
+    </script>
+    <script type="module-shim">
+      import test from "test";
+      console.log(test);
+    </script>
+    <script type="module" src="/es-module-shims.js"></script>
+    <!-- <script type="module" src="/src/index.js" defer></script> -->
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
