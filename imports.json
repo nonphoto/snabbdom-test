@@ -1,6 +1,8 @@
 {
   "imports": {
-    "snabbdom/": "https://unpkg.com/snabbdom@^0.7.4/es/"
+    "snabbdom/": "https://unpkg.com/snabbdom@^0.7.4/es/",
+    "d3-color": "https://cdn.pika.dev/d3-color@^1.4.0",
+    "lodash": "https://cdn.pika.dev/lodash@^4.17.15"
   },
   "scopes": {}
 }
