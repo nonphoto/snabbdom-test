@@ -1,5 +1,6 @@
 {
   "imports": {
-    "snabbdom": "https://cdn.pika.dev/snabbdom@^0.7.4"
-  }
+    "snabbdom/": "https://unpkg.com/snabbdom@^0.7.4/es/"
+  },
+  "scopes": {}
 }
