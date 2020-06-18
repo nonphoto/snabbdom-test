@@ -42,6 +42,7 @@ const element = (selector) => (data, children) => {
 };
 
 element.div = element("div");
+element.button = element("button");
 
 const createWrite = (node) => (value) => {
   node.data.state = value;
@@ -62,46 +63,59 @@ const read = (initialState, fn) => {
   return { fn, hook: { init, prepatch } };
 };
 
-const main = () => {
-  const count = 8;
-
-  const swatches = range(count).map((n) => {
-    const color = lch(78, 33, (n * 360) / count).toString();
-    return element.div({
-      key: n,
-      style: {
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "sans-serif",
-        background: color,
-        borderRadius: "100vw",
-        border: "solid 0.2rem white",
-        marginLeft: "-1rem",
-        padding: "1rem 2rem",
-        userSelect: "none",
-      },
-      ...read(0, (value, write) => [
-        element.div(
-          {
-            on: {
-              click: () => {
-                write(value + 1);
-              },
-            },
+const main = () =>
+  element.div({
+    style: { display: "flex", margin: "1rem" },
+    ...read(5, (count, setCount) => [
+      element.button(
+        {
+          style: {
+            padding: "1rem",
           },
-          value.toString()
-        ),
-      ]),
-    });
+          on: { click: () => setCount(count + 1) },
+        },
+        "more"
+      ),
+      element.button(
+        {
+          style: {
+            padding: "1rem",
+          },
+          on: { click: () => setCount(count - 1) },
+        },
+        "less"
+      ),
+      ...range(count).map((n) => {
+        const color = lch(78, 33, (n * 360) / count).toString();
+        return element.div({
+          key: n,
+          style: {
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontFamily: "sans-serif",
+            background: color,
+            borderRadius: "100vw",
+            border: "solid 0.2rem white",
+            marginLeft: "-1rem",
+            padding: "1rem 2rem",
+            userSelect: "none",
+          },
+          ...read(0, (value, setValue) => [
+            element.div(
+              {
+                on: {
+                  click: () => {
+                    setValue(value + 1);
+                  },
+                },
+              },
+              value.toString()
+            ),
+          ]),
+        });
+      }),
+    ]),
   });
-
-  return element.div(
-    {
-      style: { display: "flex", margin: "1rem" },
-    },
-    swatches
-  );
-};
 
 render();
