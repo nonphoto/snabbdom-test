@@ -7,22 +7,7 @@ import toVNode from "snabbdom/tovnode";
 import { range } from "lodash";
 import { lch } from "d3-color";
 
-const patch = init([
-  classModule,
-  propsModule,
-  styleModule,
-  eventModule,
-  {
-    create: (_, vnode) => {
-      if (!vnode.write) {
-        const key = Symbol(vnode.key);
-        vnode.write = (value) => {
-          state[key] = value;
-        };
-      }
-    },
-  },
-]);
+const patch = init([classModule, propsModule, styleModule, eventModule]);
 
 let vnode = toVNode(document.getElementById("root"));
 
@@ -49,73 +34,48 @@ const createWrite = (node) => (value) => {
   render();
 };
 
-const read = (initialState, fn) => {
+const read = (data, getChildren) => {
   const init = (node) => {
-    node.children = node.data.fn(initialState, createWrite(node));
-    node.data.state = initialState;
+    node.children = node.data.getChildren(node.data.initial, createWrite(node));
+    node.data.state = node.data.initial;
   };
 
   const prepatch = (prev, next) => {
-    next.children = next.data.fn(prev.data.state, createWrite(next));
+    next.children = next.data.getChildren(prev.data.state, createWrite(next));
     next.data.state = prev.data.state;
   };
 
-  return { fn, hook: { init, prepatch } };
+  return h("div", { ...data, getChildren, hook: { init, prepatch } });
 };
 
+const button = (text, onClick) =>
+  element.button({ on: { click: onClick } }, text);
+
+const counter = (key, color) =>
+  read({ initial: 0, key }, (value, setValue) => [
+    element.button(
+      {
+        style: { background: color },
+        on: { click: () => void setValue(value + 1) },
+      },
+      value.toString()
+    ),
+  ]);
+
 const main = () =>
-  element.div({
-    style: { display: "flex", margin: "1rem" },
-    ...read(5, (count, setCount) => [
-      element.button(
-        {
-          style: {
-            padding: "1rem",
-          },
-          on: { click: () => setCount(count + 1) },
-        },
-        "more"
-      ),
-      element.button(
-        {
-          style: {
-            padding: "1rem",
-          },
-          on: { click: () => setCount(count - 1) },
-        },
-        "less"
-      ),
+  read(
+    {
+      initial: 5,
+      style: { display: "flex", margin: "1rem" },
+    },
+    (count, setCount) => [
+      button("Less", () => void setCount(count - 1)),
+      button("More", () => void setCount(count + 1)),
       ...range(count).map((n) => {
         const color = lch(78, 33, (n * 360) / count).toString();
-        return element.div({
-          key: n,
-          style: {
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontFamily: "sans-serif",
-            background: color,
-            borderRadius: "100vw",
-            border: "solid 0.2rem white",
-            marginLeft: "-1rem",
-            padding: "1rem 2rem",
-            userSelect: "none",
-          },
-          ...read(0, (value, setValue) => [
-            element.div(
-              {
-                on: {
-                  click: () => {
-                    setValue(value + 1);
-                  },
-                },
-              },
-              value.toString()
-            ),
-          ]),
-        });
+        return counter(n, color);
       }),
-    ]),
-  });
+    ]
+  );
 
 render();
