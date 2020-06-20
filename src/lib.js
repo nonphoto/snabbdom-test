@@ -26,7 +26,20 @@ const render = () => {
 };
 
 export const element = (selector) => (data, children) => {
-  return h(selector, data, children);
+  return h(
+    selector,
+    {
+      ...data,
+      hook: {
+        init: data.hookInit,
+        prepatch: data.hookPrepatch,
+      },
+      on: {
+        click: data.onClick,
+      },
+    },
+    children
+  );
 };
 
 for (let tag of tagNames) {
@@ -34,21 +47,31 @@ for (let tag of tagNames) {
 }
 
 export const read = (data, getChildren) => {
-  const init = (node) => {
+  const hookInit = (node) => {
     node.children = node.data.getChildren(node.data.initial, (value) => {
       node.data.state = value;
       render();
     });
+
     node.data.state = node.data.initial;
+
+    if (typeof data.hookInit === "function") {
+      data.hookInit(node);
+    }
   };
 
-  const prepatch = (prev, next) => {
+  const hookPrepatch = (prev, next) => {
     next.children = next.data.getChildren(prev.data.state, (value) => {
       next.data.state = value;
       render();
     });
+
     next.data.state = prev.data.state;
+
+    if (typeof data.hookPrepatch === "function") {
+      data.hookPrepatch(prev, next);
+    }
   };
 
-  return h("div", { ...data, getChildren, hook: { init, prepatch } });
+  return element("div")({ ...data, getChildren, hookInit, hookPrepatch });
 };
