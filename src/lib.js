@@ -25,53 +25,57 @@ const render = () => {
   }
 };
 
-export const element = (selector) => (data, children) => {
+export const element = (selector) => (props, state, children) => {
+  const init = (node) => {
+    node.data.setter = {};
+    for (let key of Object.keys(state)) {
+      Object.defineProperty(node.data.setter, key, {
+        set: (value) => {
+          node.data.state[key] = value;
+          render();
+        },
+        get: () => node.data.state[key],
+      });
+    }
+
+    if (typeof node.data.getChildren === "function") {
+      node.children = node.data.getChildren.call(null, {
+        state: node.data.setter,
+        ref: node.elm,
+      });
+    }
+  };
+
+  const prepatch = (prev, next) => {
+    next.data.state = prev.data.state;
+    next.data.setter = prev.data.setter;
+
+    if (typeof next.data.getChildren === "function") {
+      next.children = next.data.getChildren.call(null, {
+        state: next.data.setter,
+        ref: next.elm,
+      });
+    }
+  };
+
   return h(
     selector,
     {
-      ...data,
+      ...props,
       hook: {
-        init: data.hookInit,
-        prepatch: data.hookPrepatch,
+        init,
+        prepatch,
       },
       on: {
-        click: data.onClick,
+        click: props.onClick,
       },
+      state,
+      getChildren: typeof children === "function" ? children : undefined,
     },
-    children
+    typeof children === "function" ? undefined : children
   );
 };
 
 for (let tag of tagNames) {
   element[tag] = element(tag);
 }
-
-export const read = (data, getChildren) => {
-  const hookInit = (node) => {
-    node.children = node.data.getChildren(node.data.initial, (value) => {
-      node.data.state = value;
-      render();
-    });
-
-    node.data.state = node.data.initial;
-
-    if (typeof data.hookInit === "function") {
-      data.hookInit(node);
-    }
-  };
-
-  const hookPrepatch = (prev, next) => {
-    next.children = next.data.getChildren(prev.data.state, (value) => {
-      next.data.state = value;
-      render();
-    });
-
-    next.data.state = prev.data.state;
-
-    if (typeof data.hookPrepatch === "function") {
-      data.hookPrepatch(prev, next);
-    }
-  };
-
-  return element("div")({ ...data, getChildren, hookInit, hookPrepatch });
-};
