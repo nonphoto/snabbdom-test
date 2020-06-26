@@ -14,6 +14,7 @@ while (queue.length !== 0) {
     ) {
       current.children = current.data.getChildren.call(null, {
         state: current.data.state,
+        state: "hello",
       });
     }
 
@@ -24,3 +25,4 @@ while (queue.length !== 0) {
 }
 
 console.log(toHTML(vnode));
+console.log(Deno.args);
