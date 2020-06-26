@@ -5,12 +5,12 @@ import { propsModule } from "snabbdom/props";
 import { eventListenersModule } from "snabbdom/eventlisteners";
 import { toVNode } from "snabbdom/tovnode";
 
-const patch = snabbdom([classModule, propsModule, eventListenersModule]);
+export const patch = snabbdom([classModule, propsModule, eventListenersModule]);
 
 let vnode = h("div");
 
 if (typeof document !== "undefined") {
-  vnode = toVNode(document.getElementById("root"));
+  vnode = toVNode(document.getElementTagName("main"));
 }
 
 let renderer = null;
@@ -43,8 +43,7 @@ export const element = (selector) => (props, state, children) => {
 
     if (typeof node.data.getChildren === "function") {
       node.children = node.data.getChildren.call(null, {
-        state: node.data.setter,
-        ref: node.elm,
+        state: node.data.setter || state,
       });
     }
   };
@@ -55,8 +54,7 @@ export const element = (selector) => (props, state, children) => {
 
     if (typeof next.data.getChildren === "function") {
       next.children = next.data.getChildren.call(null, {
-        state: next.data.setter,
-        ref: next.elm,
+        state: next.data.setter || state,
       });
     }
   };
