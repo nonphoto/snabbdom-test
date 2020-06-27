@@ -2,7 +2,7 @@
   "imports": {
     "snabbdom/": "https://cdn.pika.dev/snabbdom@1.0.1/",
     "d3-color": "https://cdn.pika.dev/d3-color@^1.4.0",
-    "lodash": "https://cdn.pika.dev/lodash@^4.17.15",
+    "lodash/": "https://deno.land/x/lodash/",
     "tag-names": "https://cdn.pika.dev/react-tag-names@^1.0.0"
   },
   "scopes": {}

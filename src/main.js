@@ -1,4 +1,5 @@
 import { element } from "./lib.js";
+import range from "lodash/range.js";
 import { lch } from "d3-color";
 
 const counter = ({ color, ...other }) =>
@@ -20,7 +21,7 @@ export default () =>
     ({ state }) => [
       element.button({ onClick: () => void (state.count -= 1) }, {}, "Less"),
       element.button({ onClick: () => void (state.count += 1) }, {}, "More"),
-      ...[0, 1, 2, 3, 4].map((n) => {
+      ...range(state.count).map((n) => {
         const color = lch(78, 33, (n * 360) / state.count).toString();
         return counter({ key: n, color });
       }),
