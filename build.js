@@ -1,8 +1,7 @@
 import toHTML from "./snabbdom-to-html.js";
-import main from "./src/main.js";
-import { readFileStrSync } from "https://deno.land/std/fs/mod.ts";
+import app from "./src/main.js";
 
-let vnode = main();
+let vnode = app();
 let queue = [vnode];
 
 while (queue.length !== 0) {
@@ -24,10 +23,13 @@ while (queue.length !== 0) {
   }
 }
 
-const innerHTML = toHTML(vnode);
-const outerHTML = readFileStrSync(Deno.args[0], { encoding: "utf8" });
-const result = outerHTML.replace(
-  /<main>.*<\/main>/g,
-  `<main>${innerHTML}</main>`
-);
-console.log(result);
+async function main() {
+  const innerHTML = toHTML(vnode);
+  const outerHTML = await Deno.readAll(Deno.stdin);
+  const result = new TextDecoder("utf-8")
+    .decode(outerHTML)
+    .replace(/<main>.*<\/main>/g, `<main>${innerHTML}</main>`);
+  await Deno.writeAll(Deno.stdout, new TextEncoder("utf-8").encode(result));
+}
+
+main();
