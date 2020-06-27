@@ -1,8 +1,9 @@
 import tagNames from "tag-names";
-import { h, init as snabbdom } from "snabbdom";
-import { classModule } from "snabbdom/class";
-import { propsModule } from "snabbdom/props";
-import { eventListenersModule } from "snabbdom/eventlisteners";
+import { init as snabbdom } from "snabbdom/init";
+import { h } from "snabbdom/h";
+import { classModule } from "snabbdom/modules/class";
+import { propsModule } from "snabbdom/modules/props";
+import { eventListenersModule } from "snabbdom/modules/eventlisteners";
 import { toVNode } from "snabbdom/tovnode";
 
 export const patch = snabbdom([classModule, propsModule, eventListenersModule]);
@@ -10,7 +11,7 @@ export const patch = snabbdom([classModule, propsModule, eventListenersModule]);
 let vnode = h("div");
 
 if (typeof document !== "undefined") {
-  vnode = toVNode(document.getElementTagName("main"));
+  vnode = toVNode(document.querySelector("main"));
 }
 
 let renderer = null;

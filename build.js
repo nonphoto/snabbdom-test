@@ -1,5 +1,6 @@
-import toHTML from "https://jspm.dev/snabbdom-to-html";
+import toHTML from "./snabbdom-to-html.js";
 import main from "./src/main.js";
+import { readFileStrSync } from "https://deno.land/std/fs/mod.ts";
 
 let vnode = main();
 let queue = [vnode];
@@ -14,7 +15,6 @@ while (queue.length !== 0) {
     ) {
       current.children = current.data.getChildren.call(null, {
         state: current.data.state,
-        state: "hello",
       });
     }
 
@@ -24,5 +24,10 @@ while (queue.length !== 0) {
   }
 }
 
-console.log(toHTML(vnode));
-console.log(Deno.args);
+const innerHTML = toHTML(vnode);
+const outerHTML = readFileStrSync(Deno.args[0], { encoding: "utf8" });
+const result = outerHTML.replace(
+  /<main>.*<\/main>/g,
+  `<main>${innerHTML}</main>`
+);
+console.log(result);

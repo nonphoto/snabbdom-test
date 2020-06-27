@@ -1,11 +1,6 @@
 {
   "imports": {
-    "snabbdom": "https://jspm.dev/snabbdom",
-    "snabbdom/class": "https://jspm.dev/snabbdom/modules/class",
-    "snabbdom/props": "https://jspm.dev/snabbdom/modules/props",
-    "snabbdom/style": "https://jspm.dev/snabbdom/modules/style",
-    "snabbdom/eventlisteners": "https://jspm.dev/snabbdom/modules/eventlisteners",
-    "snabbdom/tovnode": "https://jspm.dev/snabbdom/tovnode",
+    "snabbdom/": "https://cdn.pika.dev/snabbdom@1.0.1/",
     "d3-color": "https://cdn.pika.dev/d3-color@^1.4.0",
     "lodash": "https://cdn.pika.dev/lodash@^4.17.15",
     "tag-names": "https://cdn.pika.dev/react-tag-names@^1.0.0"
