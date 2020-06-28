@@ -23,13 +23,13 @@ export const init = (fn) => {
 
 const render = () => {
   if (renderer) {
-    const next = renderer();
+    const next = h("main", {}, [renderer()]);
     patch(vnode, next);
     vnode = next;
   }
 };
 
-export const element = (selector) => (props, state, children) => {
+export const element = (sel) => (data, state, children) => {
   const init = (node) => {
     node.data.setter = {};
     for (let key of Object.keys(state)) {
@@ -61,21 +61,28 @@ export const element = (selector) => (props, state, children) => {
   };
 
   return h(
-    selector,
+    sel,
     {
-      ...props,
+      ...data,
       hook: {
         init,
         prepatch,
       },
       on: {
-        click: props.onClick,
+        click: data.onClick,
       },
       state,
       getChildren: typeof children === "function" ? children : undefined,
     },
     typeof children === "function" ? undefined : children
   );
+
+  // return {
+  //   sel,
+  //   data: { ...data, on: { click: data.onClick } },
+  //   state,
+  //   children,
+  // };
 };
 
 for (let tag of tagNames) {

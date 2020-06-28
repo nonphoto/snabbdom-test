@@ -944,8 +944,8 @@ object_assign3.default(StyleSheet.prototype, {
     }
     return this.ctr - 1;
   },
-  delete(index) {
-    return this.replace(index, "");
+  delete(index2) {
+    return this.replace(index2, "");
   },
   flush() {
     if (isBrowser2) {
@@ -1446,9 +1446,6 @@ function Umul32(n, m) {
 const object_assign = __toModule(require_object_assign());
 const styleSheet = new StyleSheet();
 styleSheet.inject();
-function speedy(bool) {
-  return styleSheet.speedy(bool);
-}
 const plugins2 = (styleSheet.plugins = new PluginSet([
   prefixes2,
   contentWrap,
@@ -1458,37 +1455,9 @@ plugins2.media = new PluginSet();
 plugins2.fontFace = new PluginSet();
 plugins2.keyframes = new PluginSet([prefixes2, fallbacks]);
 const isDev = false;
-const isTest = false;
 const isBrowser = typeof window !== "undefined";
 let canSimulate = isDev;
-let warned1 = false;
-let warned2 = false;
-function simulations(bool = true) {
-  canSimulate = !!bool;
-}
-function simulate(...pseudos) {
-  pseudos = clean(pseudos);
-  if (!pseudos) return {};
-  if (!canSimulate) {
-    if (!warned1) {
-      console.warn("can't simulate without once calling simulations(true)");
-      warned1 = true;
-    }
-    if (!isDev && !isTest && !warned2) {
-      console.warn("don't use simulation outside dev");
-      warned2 = true;
-    }
-    return {};
-  }
-  return pseudos.reduce(
-    (o, p) => ((o[`data-simulate-${simple(p)}`] = ""), o),
-    {}
-  );
-}
 let hasLabels = isDev;
-function cssLabels(bool) {
-  hasLabels = !!bool;
-}
 function simple(str, char = "") {
   return str.toLowerCase().replace(/[^a-z0-9]/g, char);
 }
@@ -1949,299 +1918,50 @@ function insertFontFace(spec) {
     inserted[spec.id] = isBrowser ? true : [rule];
   }
 }
-function rehydrate(ids) {
-  object_assign.default(
-    inserted,
-    ids.reduce((o, i) => ((o[i] = true), o), {})
+
+// src/server.js
+function renderStatic(fn) {
+  let html = fn();
+  if (html === void 0) {
+    throw new Error("did you forget to return from renderToString?");
+  }
+  let rules = styleSheet.rules(),
+    css2 = rules.map((r) => r.cssText).join("");
+  return { html, ids: Object.keys(styleSheet.inserted), css: css2, rules };
+}
+function renderStaticOptimized(fn) {
+  let html = fn();
+  if (html === void 0) {
+    throw new Error("did you forget to return from renderToString?");
+  }
+  let o = { html, ids: [], css: "", rules: [] };
+  let regex = /css\-([a-zA-Z0-9\-_]+)/gm;
+  let match,
+    ids = {};
+  while ((match = regex.exec(html)) !== null) {
+    if (!ids[match[1] + ""]) {
+      ids[match[1] + ""] = true;
+    }
+  }
+  o.rules = styleSheet.rules().filter((x) => {
+    let regex2 = /css\-([a-zA-Z0-9\-_]+)/gm;
+    let match2 = regex2.exec(x.cssText);
+    if (match2 && ids[match2[1] + ""]) {
+      return true;
+    }
+    if (!match2) {
+      return true;
+    }
+    return false;
+  });
+  o.ids = Object.keys(styleSheet.inserted).filter(
+    (id) =>
+      !!ids[id + ""] ||
+      styleSheet.registered[id].type === "raw" ||
+      styleSheet.registered[id].type === "keyframes" ||
+      styleSheet.registered[id].type === "font-face"
   );
+  o.css = o.rules.map((x) => x.cssText).join("");
+  return o;
 }
-function flush() {
-  inserted = styleSheet.inserted = {};
-  registered = styleSheet.registered = {};
-  ruleCache = {};
-  styleSheet.flush();
-  styleSheet.inject();
-}
-const presets = {
-  mobile: "(min-width: 400px)",
-  Mobile: "@media (min-width: 400px)",
-  phablet: "(min-width: 550px)",
-  Phablet: "@media (min-width: 550px)",
-  tablet: "(min-width: 750px)",
-  Tablet: "@media (min-width: 750px)",
-  desktop: "(min-width: 1000px)",
-  Desktop: "@media (min-width: 1000px)",
-  hd: "(min-width: 1200px)",
-  Hd: "@media (min-width: 1200px)",
-};
-const style = css;
-function select(selector2, ...styles) {
-  if (!selector2) {
-    return style(styles);
-  }
-  return css({ [selector2]: styles });
-}
-const $ = select;
-function parent(selector2, ...styles) {
-  return css({ [`${selector2} &`]: styles });
-}
-const merge = css;
-const compose = css;
-function media(query, ...rules) {
-  return css({ [`@media ${query}`]: rules });
-}
-function pseudo(selector2, ...styles) {
-  return css({ [selector2]: styles });
-}
-function active(x) {
-  return pseudo(":active", x);
-}
-function any(x) {
-  return pseudo(":any", x);
-}
-function checked(x) {
-  return pseudo(":checked", x);
-}
-function disabled(x) {
-  return pseudo(":disabled", x);
-}
-function empty(x) {
-  return pseudo(":empty", x);
-}
-function enabled(x) {
-  return pseudo(":enabled", x);
-}
-function _default(x) {
-  return pseudo(":default", x);
-}
-function first(x) {
-  return pseudo(":first", x);
-}
-function firstChild(x) {
-  return pseudo(":first-child", x);
-}
-function firstOfType(x) {
-  return pseudo(":first-of-type", x);
-}
-function fullscreen(x) {
-  return pseudo(":fullscreen", x);
-}
-function focus(x) {
-  return pseudo(":focus", x);
-}
-function hover(x) {
-  return pseudo(":hover", x);
-}
-function indeterminate(x) {
-  return pseudo(":indeterminate", x);
-}
-function inRange(x) {
-  return pseudo(":in-range", x);
-}
-function invalid(x) {
-  return pseudo(":invalid", x);
-}
-function lastChild(x) {
-  return pseudo(":last-child", x);
-}
-function lastOfType(x) {
-  return pseudo(":last-of-type", x);
-}
-function left(x) {
-  return pseudo(":left", x);
-}
-function link(x) {
-  return pseudo(":link", x);
-}
-function onlyChild(x) {
-  return pseudo(":only-child", x);
-}
-function onlyOfType(x) {
-  return pseudo(":only-of-type", x);
-}
-function optional(x) {
-  return pseudo(":optional", x);
-}
-function outOfRange(x) {
-  return pseudo(":out-of-range", x);
-}
-function readOnly(x) {
-  return pseudo(":read-only", x);
-}
-function readWrite(x) {
-  return pseudo(":read-write", x);
-}
-function required(x) {
-  return pseudo(":required", x);
-}
-function right(x) {
-  return pseudo(":right", x);
-}
-function root(x) {
-  return pseudo(":root", x);
-}
-function scope(x) {
-  return pseudo(":scope", x);
-}
-function target(x) {
-  return pseudo(":target", x);
-}
-function valid(x) {
-  return pseudo(":valid", x);
-}
-function visited(x) {
-  return pseudo(":visited", x);
-}
-function dir(p, x) {
-  return pseudo(`:dir(${p})`, x);
-}
-function lang(p, x) {
-  return pseudo(`:lang(${p})`, x);
-}
-function not(p, x) {
-  let selector2 = p
-    .split(",")
-    .map((x2) => x2.trim())
-    .map((x2) => `:not(${x2})`);
-  if (selector2.length === 1) {
-    return pseudo(`:not(${p})`, x);
-  }
-  return select(selector2.join(""), x);
-}
-function nthChild(p, x) {
-  return pseudo(`:nth-child(${p})`, x);
-}
-function nthLastChild(p, x) {
-  return pseudo(`:nth-last-child(${p})`, x);
-}
-function nthLastOfType(p, x) {
-  return pseudo(`:nth-last-of-type(${p})`, x);
-}
-function nthOfType(p, x) {
-  return pseudo(`:nth-of-type(${p})`, x);
-}
-function after(x) {
-  return pseudo("::after", x);
-}
-function before(x) {
-  return pseudo("::before", x);
-}
-function firstLetter(x) {
-  return pseudo("::first-letter", x);
-}
-function firstLine(x) {
-  return pseudo("::first-line", x);
-}
-function selection(x) {
-  return pseudo("::selection", x);
-}
-function backdrop(x) {
-  return pseudo("::backdrop", x);
-}
-function placeholder(x) {
-  return css({ "::placeholder": x });
-}
-function cssFor(...rules) {
-  rules = clean(rules);
-  return rules
-    ? rules
-        .map((r) => {
-          let style2 = { label: [] };
-          build(style2, { src: r });
-          return deconstructedStyleToCSS(
-            hashify(style2),
-            deconstruct(style2)
-          ).join("");
-        })
-        .join("")
-    : "";
-}
-function attribsFor(...rules) {
-  rules = clean(rules);
-  let htmlAttributes = rules
-    ? rules
-        .map((rule) => {
-          idFor(rule);
-          let key = Object.keys(rule)[0],
-            value = rule[key];
-          return `${key}="${value || ""}"`;
-        })
-        .join(" ")
-    : "";
-  return htmlAttributes;
-}
-export {
-  $,
-  _default,
-  active,
-  after,
-  any,
-  attribsFor,
-  backdrop,
-  before,
-  checked,
-  compose,
-  css,
-  cssFor,
-  cssLabels,
-  dir,
-  disabled,
-  empty,
-  enabled,
-  first,
-  firstChild,
-  firstLetter,
-  firstLine,
-  firstOfType,
-  flush,
-  focus,
-  fontFace,
-  fullscreen,
-  hover,
-  idFor,
-  inRange,
-  indeterminate,
-  insertGlobal,
-  insertRule,
-  invalid,
-  isLikeRule,
-  keyframes,
-  lang,
-  lastChild,
-  lastOfType,
-  left,
-  link,
-  media,
-  merge,
-  not,
-  nthChild,
-  nthLastChild,
-  nthLastOfType,
-  nthOfType,
-  onlyChild,
-  onlyOfType,
-  optional,
-  outOfRange,
-  parent,
-  placeholder,
-  plugins2 as plugins,
-  presets,
-  pseudo,
-  readOnly,
-  readWrite,
-  rehydrate,
-  required,
-  right,
-  root,
-  scope,
-  select,
-  selection,
-  simulate,
-  simulations,
-  speedy,
-  style,
-  styleSheet,
-  target,
-  valid,
-  visited,
-};
+export { renderStatic, renderStaticOptimized };
