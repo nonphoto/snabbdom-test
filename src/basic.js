@@ -1,7 +1,7 @@
-import { element } from "./lib.js";
-import range from "lodash/range.js";
-import { lch } from "d3-color";
-import { css } from "./glamor.js";
+import { element } from "../mod.js";
+import range from "https://deno.land/x/lodash/range.js";
+import { lch } from "https://cdn.pika.dev/d3-color@^1.4.0";
+import { css } from "../lib/glamor.js";
 
 const counter = ({ color, ...other }) =>
   element.div(other, { value: 0 }, ({ state }) => [
