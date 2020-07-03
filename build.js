@@ -1,42 +1,28 @@
-import toHTML from "./snabbdom-to-html.js";
-import { styleSheet } from "./src/glamor.js";
-import app from "./src/main.js";
+import toHTML from "./lib/snabbdom-to-html.js";
+import { styleSheet } from "./lib/glamor.js";
+import { renderChildren } from "./mod.js";
+import { renderFile } from "https://deno.land/x/dejs/mod.ts";
 
-let vnode = app();
-let queue = [vnode];
+(async () => {
+  const [appPath] = Deno.args;
+  const app = await import(appPath);
+  const html = toHTML(renderChildren(app.default()));
+  const style = styleSheet
+    .rules()
+    .map((r) => r.cssText)
+    .join("");
 
-while (queue.length !== 0) {
-  const current = queue.shift();
+  const moduleShimsContent = await Deno.readTextFile(
+    "./lib/es-module-shims.js"
+  );
 
-  if (typeof current === "object") {
-    if (
-      typeof current.children === "undefined" &&
-      typeof current.data.getChildren === "function"
-    ) {
-      current.children = current.data.getChildren.call(null, {
-        state: current.data.state,
-      });
-    }
+  const content = `
+    <style>${style}</style>
+    <script type="importmap-shim" src="/imports.json"></script>
+    <main>${html}</main>
+    <script type="module-shim" src="${appPath}"></script>
+    <script type="module">${moduleShimsContent}</script>`;
 
-    if (current.children instanceof Array) {
-      queue = queue.concat(current.children);
-    }
-  }
-}
-
-const style = styleSheet
-  .rules()
-  .map((r) => r.cssText)
-  .join("");
-
-async function main() {
-  const innerHTML = toHTML(vnode);
-  const outerHTML = await Deno.readAll(Deno.stdin);
-  const result = new TextDecoder("utf-8")
-    .decode(outerHTML)
-    .replace(/<main>.*<\/main>/g, `<main>${innerHTML}</main>`)
-    .replace(/<style id="_glam">.*<\/style>/g, `<style>${style}</style>`);
-  await Deno.writeAll(Deno.stdout, new TextEncoder("utf-8").encode(result));
-}
-
-main();
+  const output = await renderFile(`./template.ejs`, { content });
+  await Deno.copy(output, Deno.stdout);
+})();

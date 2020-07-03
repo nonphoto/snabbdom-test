@@ -1,4 +1,4 @@
-import { element } from "../mod.js";
+import { element, init } from "../mod.js";
 import range from "https://deno.land/x/lodash/range.js";
 import { lch } from "https://cdn.pika.dev/d3-color@^1.4.0";
 import { css } from "../lib/glamor.js";
@@ -15,7 +15,7 @@ const counter = ({ color, ...other }) =>
     ),
   ]);
 
-export default () =>
+const main = () =>
   element.div(
     { props: { className: css({ display: "flex", margin: "1rem" }) } },
     { count: 5 },
@@ -28,3 +28,7 @@ export default () =>
       }),
     ]
   );
+
+export default main;
+
+init(main)();

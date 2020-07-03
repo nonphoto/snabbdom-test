@@ -8,16 +8,15 @@ import { toVNode } from "snabbdom/tovnode";
 
 export const patch = snabbdom([classModule, propsModule, eventListenersModule]);
 
-let vnode = h("div");
-
-if (typeof document !== "undefined") {
-  vnode = toVNode(document.querySelector("main"));
-}
-
+let vnode = h("main");
 let renderer = null;
 
 export const init = (fn) => {
-  renderer = fn;
+  if (typeof document !== "undefined") {
+    vnode = toVNode(document.querySelector("main"));
+    renderer = fn;
+  }
+
   return render;
 };
 
@@ -76,15 +75,34 @@ export const element = (sel) => (data, state, children) => {
     },
     typeof children === "function" ? undefined : children
   );
-
-  // return {
-  //   sel,
-  //   data: { ...data, on: { click: data.onClick } },
-  //   state,
-  //   children,
-  // };
 };
 
 for (let tag of tagNames) {
   element[tag] = element(tag);
 }
+
+export const renderChildren = (vnode) => {
+  const result = Object.assign({}, vnode);
+  let queue = [result];
+
+  while (queue.length !== 0) {
+    const current = queue.shift();
+
+    if (typeof current === "object") {
+      if (
+        typeof current.children === "undefined" &&
+        typeof current.data.getChildren === "function"
+      ) {
+        current.children = current.data.getChildren.call(null, {
+          state: current.data.state,
+        });
+      }
+
+      if (current.children instanceof Array) {
+        queue = queue.concat(current.children);
+      }
+    }
+  }
+
+  return result;
+};
