@@ -16,13 +16,16 @@ import { renderFile } from "https://deno.land/x/dejs/mod.ts";
     "./lib/es-module-shims.js"
   );
 
-  const content = `
+  const head = `
     <style>${style}</style>
     <script type="importmap-shim" src="/imports.json"></script>
+  `;
+
+  const body = `
     <main>${html}</main>
     <script type="module-shim" src="${appPath}"></script>
     <script type="module">${moduleShimsContent}</script>`;
 
-  const output = await renderFile(`./template.ejs`, { content });
+  const output = await renderFile(`./template.ejs`, { head, body });
   await Deno.copy(output, Deno.stdout);
 })();

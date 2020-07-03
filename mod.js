@@ -5,6 +5,7 @@ import { classModule } from "snabbdom/modules/class";
 import { propsModule } from "snabbdom/modules/props";
 import { eventListenersModule } from "snabbdom/modules/eventlisteners";
 import { toVNode } from "snabbdom/tovnode";
+import { css } from "./lib/glamor.js";
 
 export const patch = snabbdom([classModule, propsModule, eventListenersModule]);
 
@@ -63,6 +64,9 @@ export const element = (sel) => (data, state, children) => {
     sel,
     {
       ...data,
+      props: data.style
+        ? { ...data.props, className: css(data.style) }
+        : data.props,
       hook: {
         init,
         prepatch,

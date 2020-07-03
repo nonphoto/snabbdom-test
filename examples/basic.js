@@ -1,13 +1,12 @@
 import { element, init } from "../mod.js";
 import range from "https://deno.land/x/lodash/range.js";
 import { lch } from "https://cdn.pika.dev/d3-color@^1.4.0";
-import { css } from "../lib/glamor.js";
 
 const counter = ({ color, ...other }) =>
   element.div(other, { value: 0 }, ({ state }) => [
     element.button(
       {
-        props: { className: css({ background: color }) },
+        style: { background: color },
         onClick: () => void (state.value += 1),
       },
       {},
@@ -17,7 +16,7 @@ const counter = ({ color, ...other }) =>
 
 const main = () =>
   element.div(
-    { props: { className: css({ display: "flex", margin: "1rem" }) } },
+    { style: { display: "flex", margin: "1rem" } },
     { count: 5 },
     ({ state }) => [
       element.button({ onClick: () => void (state.count -= 1) }, {}, "Less"),
