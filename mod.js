@@ -1,9 +1,9 @@
-import tagNames from "tag-names";
-import { init as snabbdom } from "snabbdom/init";
-import { h } from "snabbdom/h";
-import { propsModule } from "snabbdom/modules/props";
-import { eventListenersModule } from "snabbdom/modules/eventlisteners";
-import { toVNode } from "snabbdom/tovnode";
+import tagNames from "https://cdn.pika.dev/react-tag-names@^1.0.0";
+import { init as snabbdom } from "https://cdn.pika.dev/snabbdom@1.0.1/init";
+import { h } from "https://cdn.pika.dev/snabbdom@1.0.1/h";
+import { propsModule } from "https://cdn.pika.dev/snabbdom@1.0.1/modules/props";
+import { eventListenersModule } from "https://cdn.pika.dev/snabbdom@1.0.1/modules/eventlisteners";
+import { toVNode } from "https://cdn.pika.dev/snabbdom@1.0.1/tovnode";
 import { css } from "./lib/glamor.js";
 
 export const patch = snabbdom([propsModule, eventListenersModule]);
