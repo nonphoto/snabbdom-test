@@ -8,75 +8,73 @@ import { css } from "./lib/glamor.js";
 
 export const patch = snabbdom([propsModule, eventListenersModule]);
 
-let vnode = h("main");
-let renderer = null;
+export const init = (fn, selector = "#main") => {
+  let vnode = toVNode(document.querySelector(selector));
 
-export const init = (fn) => {
-  if (typeof document !== "undefined") {
-    vnode = toVNode(document.querySelector("main"));
-    renderer = fn;
-  }
+  const render = () => {
+    const next = h(vnode.sel, {}, [fn({ render })]);
+    patch(vnode, next);
+    vnode = next;
+  };
 
   return render;
 };
 
-const render = () => {
-  if (renderer) {
-    const next = h("main", {}, [renderer()]);
-    patch(vnode, next);
-    vnode = next;
+const createMutator = (o, fn) => {
+  const p = {};
+  for (let key of Object.keys(o)) {
+    const privateKey = `_${key}`;
+    p[privateKey] = o[key];
+    Object.defineProperty(p, key, {
+      set: (value) => {
+        p[privateKey] = value;
+        fn.call(null, key, value);
+      },
+      get: () => p[privateKey],
+    });
   }
+  return p;
 };
 
-export const element = (sel) => (data, state, children) => {
+export const read = (key, state, fn) => (context) => {
   const init = (node) => {
-    node.data.setter = {};
-    for (let key of Object.keys(state)) {
-      Object.defineProperty(node.data.setter, key, {
-        set: (value) => {
-          node.data.state[key] = value;
-          render();
-        },
-        get: () => node.data.state[key],
-      });
-    }
-
-    if (typeof node.data.getChildren === "function") {
-      node.children = node.data.getChildren.call(null, {
-        state: node.data.setter || state,
-      });
-    }
+    node.data.state = createMutator(state, context.render);
+    node.children = node.data.fn
+      .call(null, {
+        ...context,
+        state: node.data.state,
+      })
+      .map((child) => child.call(null, context));
   };
 
   const prepatch = (prev, next) => {
     next.data.state = prev.data.state;
-    next.data.setter = prev.data.setter;
-
-    if (typeof next.data.getChildren === "function") {
-      next.children = next.data.getChildren.call(null, {
-        state: next.data.setter || state,
-      });
-    }
+    next.children = next.data.fn
+      .call(null, {
+        ...context,
+        state: next.data.state,
+      })
+      .map((child) => child.call(null, context));
   };
 
+  return h("div", { key, hook: { init, prepatch }, fn });
+};
+
+export const element = (selector) => (data, children) => (context) => {
   return h(
-    sel,
+    selector,
     {
       ...data,
-      props: data.style
-        ? { ...data.props, className: css(data.style) }
-        : data.props,
-      hook: {
-        init,
-        prepatch,
+      props: {
+        className: data.style ? css(data.style) : "",
       },
       on: {
         click: data.onClick,
       },
-      state,
-      getChildren: typeof children === "function" ? children : undefined,
     },
-    typeof children === "function" ? undefined : children
+    children instanceof Array
+      ? children.map((child) => child.call(null, context))
+      : children
   );
 };
 
@@ -84,8 +82,9 @@ for (let tag of tagNames) {
   element[tag] = element(tag);
 }
 
-export const renderChildren = (vnode) => {
-  const result = Object.assign({}, vnode);
+export const prerender = (fn) => {
+  const context = { render: () => {} };
+  const result = Object.assign({}, fn(context));
   let queue = [result];
 
   while (queue.length !== 0) {
