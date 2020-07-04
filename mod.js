@@ -1,13 +1,12 @@
 import tagNames from "tag-names";
 import { init as snabbdom } from "snabbdom/init";
 import { h } from "snabbdom/h";
-import { classModule } from "snabbdom/modules/class";
 import { propsModule } from "snabbdom/modules/props";
 import { eventListenersModule } from "snabbdom/modules/eventlisteners";
 import { toVNode } from "snabbdom/tovnode";
 import { css } from "./lib/glamor.js";
 
-export const patch = snabbdom([classModule, propsModule, eventListenersModule]);
+export const patch = snabbdom([propsModule, eventListenersModule]);
 
 let vnode = h("main");
 let renderer = null;
