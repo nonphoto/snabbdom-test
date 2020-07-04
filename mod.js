@@ -57,7 +57,7 @@ export const read = (key, state, fn) => (context) => {
       .map((child) => child.call(null, context));
   };
 
-  return h("div", { key, hook: { init, prepatch }, fn });
+  return h("div", { key, hook: { init, prepatch }, fn, state });
 };
 
 export const element = (selector) => (data, children) => (context) => {
@@ -82,9 +82,9 @@ for (let tag of tagNames) {
   element[tag] = element(tag);
 }
 
-export const prerender = (fn) => {
+export const prebuild = (fn) => {
   const context = { render: () => {} };
-  const result = Object.assign({}, fn(context));
+  const result = fn.call(null, context);
   let queue = [result];
 
   while (queue.length !== 0) {
@@ -93,15 +93,17 @@ export const prerender = (fn) => {
     if (typeof current === "object") {
       if (
         typeof current.children === "undefined" &&
-        typeof current.data.getChildren === "function"
+        typeof current.data.fn === "function"
       ) {
-        current.children = current.data.getChildren.call(null, {
+        current.children = current.data.fn.call(null, {
           state: current.data.state,
         });
       }
 
       if (current.children instanceof Array) {
-        queue = queue.concat(current.children);
+        queue = queue.concat(
+          current.children.map((child) => child.call(null, context))
+        );
       }
     }
   }

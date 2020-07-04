@@ -1,12 +1,12 @@
 import toHTML from "./lib/snabbdom-to-html.js";
 import { styleSheet } from "./lib/glamor.js";
-import { prerender } from "./mod.js";
+import { prebuild } from "./mod.js";
 import { renderFile } from "https://deno.land/x/dejs/mod.ts";
 
 (async () => {
   const [appPath] = Deno.args;
   const app = await import(appPath);
-  const htmlContent = toHTML(prerender(app.default));
+  const htmlContent = toHTML(prebuild(app.default));
   const styleContent = styleSheet
     .rules()
     .map((r) => r.cssText)
