@@ -61,15 +61,26 @@ export const read = (key, state, fn) => (context) => {
 };
 
 export const element = (selector) => (data, children) => (context) => {
+  const entries = Object.entries(data);
+  const props = Object.fromEntries(
+    entries.filter(([k]) => k.startsWith(".")).map(([k, v]) => [k.slice(1), v])
+  );
+  const attrs = Object.fromEntries(
+    entries.filter(([k]) => k.startsWith(":")).map(([k, v]) => [k.slice(1), v])
+  );
+  const on = Object.fromEntries(
+    entries.filter(([k]) => k.startsWith("@")).map(([k, v]) => [k.slice(1), v])
+  );
+
   return h(
     selector,
     {
       ...data,
+      on,
+      attrs,
       props: {
-        className: data.style ? css(data.style) : "",
-      },
-      on: {
-        click: data.onClick,
+        ...props,
+        className: data.style ? css(data.style) : undefined,
       },
     },
     children instanceof Array

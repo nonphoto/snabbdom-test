@@ -4,7 +4,27 @@ export { init } from "../mod.js";
 const ctof = (c) => c * (9 / 5) + 32;
 const ftoc = (f) => (f - 32) * (5 / 9);
 
-export default read(null, { celsius: 0, fahrenheit: 0 }, ({ state }) => [
-  element.input({ props: { value: state.celsius } }),
-  element.input({ props: { value: state.fahrenheit } }),
-]);
+export default read(
+  null,
+  { celsius: 100, fahrenheit: ctof(100) },
+  ({ state }) => [
+    element.label({}, "Celsius: "),
+    element.input({
+      ":type": "number",
+      ".value": state.celsius,
+      "@input": (e) => {
+        state.celsius = e.target.value;
+        state.fahrenheit = ctof(e.target.value);
+      },
+    }),
+    element.label({}, "Fahrenheit: "),
+    element.input({
+      ":type": "number",
+      ".value": state.fahrenheit,
+      "@input": (e) => {
+        state.celsius = ftoc(e.target.value);
+        state.fahrenheit = e.target.value;
+      },
+    }),
+  ]
+);
