@@ -36,54 +36,62 @@ const createMutator = (o, fn) => {
   return p;
 };
 
-export const read = (key, state, fn) => (context) => {
-  const init = (node) => {
-    node.data.state = createMutator(state, context.render);
-    node.children = node.data.fn
-      .call(null, {
-        ...context,
-        state: node.data.state,
-      })
-      .map((child) => child.call(null, context));
-  };
-
-  const prepatch = (prev, next) => {
-    next.data.state = prev.data.state;
-    next.children = next.data.fn
-      .call(null, {
-        ...context,
-        state: next.data.state,
-      })
-      .map((child) => child.call(null, context));
-  };
-
-  return h("div", { key, hook: { init, prepatch }, fn, state });
-};
-
 export const element = (selector) => (data, children) => (context) => {
+  const shouldDeferChildren = typeof children === "function";
+
   const entries = Object.entries(data);
+
   const props = Object.fromEntries(
     entries.filter(([k]) => k.startsWith(".")).map(([k, v]) => [k.slice(1), v])
   );
+
   const attrs = Object.fromEntries(
     entries.filter(([k]) => k.startsWith(":")).map(([k, v]) => [k.slice(1), v])
   );
+
   const on = Object.fromEntries(
     entries.filter(([k]) => k.startsWith("@")).map(([k, v]) => [k.slice(1), v])
   );
+
+  const hook = shouldDeferChildren
+    ? {
+        init: (node) => {
+          node.data.state = createMutator(data.state, context.render);
+          node.children = node.data.fn
+            .call(null, {
+              ...context,
+              state: node.data.state,
+            })
+            .map((child) => child.call(null, context));
+        },
+        prepatch: (prev, next) => {
+          next.data.state = prev.data.state;
+          next.children = next.data.fn
+            .call(null, {
+              ...context,
+              state: next.data.state,
+            })
+            .map((child) => child.call(null, context));
+        },
+      }
+    : undefined;
 
   return h(
     selector,
     {
       ...data,
       on,
+      hook,
       attrs,
       props: {
         ...props,
         className: data.style ? css(data.style) : undefined,
       },
+      fn: shouldDeferChildren ? children : undefined,
     },
-    children instanceof Array
+    shouldDeferChildren
+      ? undefined
+      : children instanceof Array
       ? children.map((child) => child.call(null, context))
       : children
   );

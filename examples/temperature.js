@@ -1,12 +1,11 @@
-import { element, read } from "../mod.js";
+import { element } from "../mod.js";
 export { init } from "../mod.js";
 
 const ctof = (c) => c * (9 / 5) + 32;
 const ftoc = (f) => (f - 32) * (5 / 9);
 
-export default read(
-  null,
-  { celsius: 100, fahrenheit: ctof(100) },
+export default element.form(
+  { state: { celsius: 100, fahrenheit: ctof(100) } },
   ({ state }) => [
     element.label({}, "Celsius: "),
     element.input({
