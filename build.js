@@ -32,7 +32,6 @@ const outPath = path.normalize(args.outfile);
     <script type="module">${moduleShimsContent}</script>`;
 
   const output = await renderFileToString(`./template.ejs`, { head, body });
-  console.log(outPath);
   await fs.ensureFile(outPath);
   await Deno.writeTextFile(outPath, output);
 })();
